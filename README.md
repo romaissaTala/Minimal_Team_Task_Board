@@ -11,6 +11,15 @@
 
 A modern, real-time task management solution that enables teams to organize, track, and collaborate on projects efficiently using an intuitive drag-and-drop Kanban board interface.
 
+
+## 📄 Complete Documentation
+
+[![PDF Demo](https://img.shields.io/badge/Download-Complete%20PDF%20Demo-red.svg)](demo/TaskBoard-App-Demo.pdf)
+
+[![View PDF](https://img.shields.io/badge/View-PDF%20Online-blue.svg)](https://github.com/romaissaTala/Minimal_Team_Task_Board/blob/main/demo/TaskBoard-App-Demo.pdf)
+
+
+
 ## 🏗️ Technical Architecture
 
 ### Frontend
