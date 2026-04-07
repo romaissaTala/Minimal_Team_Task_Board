@@ -1,0 +1,125 @@
+Project 1: Minimal Team Task Board
+Core Focus: Real-time collaboration, Complex UI (Drag & Drop), Optimistic Updates.
+
+1. Deep Explanation & Logic
+This is not a Trello clone with millions of features. It is a synchronized workspace.
+
+Live Updates: When User A moves a task, User B sees it move instantly without refreshing.
+
+Typing Indicator: A complex UI pattern involving presence detection. If User A is typing a comment, User B sees "User A is typing..." in real-time.
+
+Drag and Drop: This is the core interaction. You need to handle reordering within a single column (list) and moving items between columns (e.g., "To Do" -> "In Progress").
+
+2. Data Modeling (Tables/Collections)
+Assuming you use Supabase or Firebase (NoSQL/SQL structure):
+
+Users: id, username, avatar_url, status (online/offline).
+
+Projects: id, name, owner_id.
+
+Columns: id, project_id, name (e.g., "To Do"), order_index.
+
+Tasks: id, column_id, title, description, assignee_id, order_index (crucial for drag-drop ordering).
+
+Activities: id, task_id, user_id, action ("typing", "moved", "commented"), timestamp.
+
+3. Pages & UI
+Splash/Landing Page: Simple logo animation.
+
+Project List Screen: Grid of project cards.
+
+Board Screen (Main):
+
+Top Bar: Project name, member avatars (showing online status).
+
+Body: SingleChildScrollView (horizontal) with Row of Columns.
+
+Column Widget: Header (title, count) and a Draggable/DragTarget ListView.
+
+Typing Indicator: A small animated bar (3 dots) at the bottom of a task detail modal or comment section.
+
+4. Backend & APIs (Free Resources)
+Backend: Supabase (Recommended) using Postgres with Realtime subscriptions.
+
+APIs: You will use Supabase's built-in Realtime WebSocket API.
+
+For your own API creation: If you use ASP.NET Core, you would use SignalR (for real-time WebSockets). This is a great way to learn back-end real-time architecture.
+
+5. Templates & Animations
+Template: Look for "Flutter Trello Clone" templates on CodeCanyon or GitHub for drag-and-drop logic (specifically using reorderables or draggable widgets).
+
+Animations:
+
+Hero Animations: When clicking a task card to open details, use Hero to fly the card to the modal.
+
+Animated Container: For the typing indicator bouncing dots.
+
+Flutter Staggered Animations: For list items appearing smoothly.
+
+Supabase :
+password : IMHEREFORYOUROMAISSA2001
+API URL
+RESTful endpoint for querying and managing your database
+https://kklfzbmeuicuiiuslgec.supabase.co
+anon public
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbGZ6Ym1ldWljdWlpdXNsZ2VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDA1NTYsImV4cCI6MjA5MDk3NjU1Nn0.4ZkeTxIb6KX3NBSfJfrt6rnDEThHqj-5ooVDP0DRTWg
+
+
+project uml resume :
+
+
+Package explanations (as promised)
+Here's what each key package does and why it's used here:
+supabase_flutter — This replaces both your database AND your backend. It handles auth sessions, makes PostgreSQL queries feel like calling a simple API, and gives you stream() for real-time updates. When you call .stream(primaryKey: ['id']), it opens a WebSocket to Supabase and pushes changes to your app whenever any user modifies data.
+flutter_bloc — Separates UI from business logic. Each BLoC takes Events as input (user actions) and emits States as output (what the UI should show). This makes it impossible to have UI that modifies data directly — all changes go through events, making the code testable and debuggable.
+go_router — Handles navigation between pages. The redirect function in the router checks if the user is authenticated on every navigation attempt. If not authenticated and going to a protected route, it redirects to /login automatically.
+get_it — Dependency injection. Instead of creating AuthBloc(AuthRepository(AuthRemoteDataSource(supabase))) manually everywhere, you register everything once in injection_container.dart and call sl<AuthBloc>() anywhere. sl = service locator.
+equatable — Makes BLoC states comparable by value instead of by reference. Without it, BoardLoaded(columns) == BoardLoaded(sameColumns) would be false and cause unnecessary rebuilds.
+LongPressDraggable — Built-in Flutter widget. data is the payload passed when dropped. feedback is what floats under the finger. childWhenDragging is the grey placeholder. DragTarget is what receives the drop and has onAcceptWithDetails callback.
+flutter_animate — Chain animations on any widget with .animate().fadeIn().slideY(). Much simpler than AnimationController.
+
+Summary of what you have
+The complete project gives you: splash → login/register with Supabase auth → projects list with create sheet → board page with horizontal scroll Kanban columns → drag & drop tasks between columns with optimistic updates + Supabase realtime sync → task detail with comments.
+The architecture follows strict feature-first clean architecture: presentation (UI + BLoC) → domain (entities + use cases, zero Flutter dependencies) → data (Supabase calls + models). Each layer only knows about the layer below it through abstract interfaces.
+
+
+
+D:\Minimal_Team_Task_Board>keytool -genkey -v -keystore D:\Minimal_Team_Task_Board\android\app\upload-keystore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+Enter keystore password:  
+Re-enter new password: 
+What is your first and last name?
+  [Unknown]:  talaboulma roumaissa
+What is the name of your organizational unit?
+  [Unknown]:  talaboulmaRoumaissa 
+What is the name of your organization?
+  [Unknown]:  talaboulmaRoumaissa
+What is the name of your City or Locality?
+  [Unknown]:  Blida
+What is the name of your State or Province?
+  [Unknown]:  algeria
+What is the two-letter country code for this unit?
+  [Unknown]:  DZ
+Is CN=talaboulma roumaissa, OU=talaboulmaRoumaissa, O=talaboulmaRoumaissa, L=Blida, ST=algeria, C=DZ correct?
+  [no]:  yes
+
+Generating 2?048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 10?000 days
+        for: CN=talaboulma roumaissa, OU=talaboulmaRoumaissa, O=talaboulmaRoumaissa, L=Blida, ST=algeria, C=DZ
+Enter key password for <upload>
+        (RETURN if same as keystore password):
+Re-enter new password: 
+[Storing D:\Minimal_Team_Task_Board\android\app\upload-keystore.jks]
+
+Warning:
+The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keytool -importkeystore -srckeystore D:\Minimal_Team_Task_Board\android\app\upload-keystore.jks -destkeystore D:\Minimal_Team_Task_Board\android\app\upload-keystore.jks -deststoretype pkcs12".
+
+D:\Minimal_Team_Task_Board>
+
+
+# Build a release APK (for sharing directly):
+flutter build apk --release
+
+# Or build an App Bundle (for Play Store):
+flutter build appbundle --release
+
+# Your APK will be at:
+# build\app\outputs\flutter-apk\app-release.apk
