@@ -14,6 +14,7 @@ import '../../features/presence/data/datasources/presence_service.dart';
 import '../../features/projects/data/datasources/project_remote_datasource.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/project_repository.dart';
+import '../../features/projects/domain/usecases/delete_project_usecase.dart';
 import '../../features/projects/domain/usecases/get_projects_usecase.dart';
 import '../../features/projects/domain/usecases/create_project_usecase.dart';
 import '../../features/projects/presentation/bloc/project_bloc.dart';
@@ -66,9 +67,10 @@ Future<void> init() async {
   );
   sl.registerLazySingleton(() => GetProjectsUseCase(sl()));
   sl.registerLazySingleton(() => CreateProjectUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteProjectUseCase(sl()));
   sl.registerFactory(() => ProjectBloc(
         getProjectsUseCase: sl(),
-        createProjectUseCase: sl(),
+        createProjectUseCase: sl(),deleteProjectUseCase: sl(),
       ));
 
   // ---- BOARD ----

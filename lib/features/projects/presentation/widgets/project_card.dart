@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../domain/entities/project_entity.dart';
+import '../bloc/project_bloc.dart';
+import '../bloc/project_event.dart';
 
 class ProjectCard extends StatelessWidget {
   final ProjectEntity project;
@@ -30,7 +33,9 @@ class ProjectCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: () => _showDeleteDialog(context),
       child: Container(
+        width: double.infinity, // FIX: Ensures full width
         decoration: BoxDecoration(
           color: scheme.surface,
           borderRadius: BorderRadius.circular(16),
@@ -42,26 +47,23 @@ class ProjectCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top color bar
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 5,
-                decoration: BoxDecoration(
-                  color: _color,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
+            Container(
+              height: 5,
+              decoration: BoxDecoration(
+                color: _color,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
                 ),
               ),
             ),
 
+            // Content
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 18, 14, 14),
+              padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -80,7 +82,7 @@ class ProjectCard extends StatelessWidget {
                     ),
                   ),
 
-                  const Spacer(),
+                  const SizedBox(height: 12),
 
                   // Name
                   Text(
@@ -110,10 +112,57 @@ class ProjectCard extends StatelessWidget {
             ),
           ],
         ),
-      )
-      .animate()
-      .fadeIn(delay: Duration(milliseconds: 80 * index), duration: 400.ms)
-      .slideY(begin: 0.15, end: 0),
+      ),
+    )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 80 * index), duration: 400.ms)
+        .slideY(begin: 0.15, end: 0);
+  }
+
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.delete_outline, color: Colors.red[400], size: 28),
+            const SizedBox(width: 12),
+            const Text('Delete Project'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to delete "${project.name}"?\n\nThis action cannot be undone and will delete all tasks, columns, and comments in this project.',
+          style: const TextStyle(height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteProject(context);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
+  }
+
+  void _deleteProject(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Deleting project...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+
+    context.read<ProjectBloc>().add(DeleteProject(project.id));
   }
 }
