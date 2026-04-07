@@ -14,7 +14,7 @@ A modern, real-time task management solution that enables teams to organize, tra
 
 ## 📄 Complete Documentation
 
-[![Download PDF Demo](https://img.shields.io/badge/📥_Download-Complete_PDF_Demo-red?style=for-the-badge&logo=adobeacrobatreader)](demo/TaskBoard-App-Demo.pdf)
+[![Download PDF Demo](https://img.shields.io/badge/📥_Download-Complete_PDF_Demo-red?style=for-the-badge&logo=adobeacrobatreader)](demo/TaskBoard_App_Demo.pdf)
 
 
 
