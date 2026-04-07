@@ -10,22 +10,37 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<UserEntity> login({
     required String email,
     required String password,
-  }) => _dataSource.login(email: email, password: password);
+  }) =>
+      _dataSource.login(email: email, password: password);
 
   @override
   Future<UserEntity> register({
     required String email,
     required String password,
     required String username,
-  }) => _dataSource.register(
-    email: email,
-    password: password,
-    username: username,
-  );
+  }) =>
+      _dataSource.register(
+        email: email,
+        password: password,
+        username: username,
+      );
 
   @override
   Future<void> logout() => _dataSource.logout();
 
   @override
   UserEntity? getCurrentUser() => _dataSource.getCurrentUser();
+
+  @override
+  Future<void> sendMagicLink({required String email}) {
+    return _dataSource.sendMagicLink(email: email);
+  }
+
+  @override
+  Future<UserEntity> verifyMagicLink({
+    required String email,
+    required String token,
+  }) {
+    return _dataSource.verifyMagicLink(email: email, token: token);
+  }
 }

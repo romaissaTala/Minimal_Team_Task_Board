@@ -23,15 +23,33 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
 
   @override
   Future<TaskDetailEntity> getTask(String taskId) async {
+    // Fix: Specify which relationship to use for profiles
     final task = await _client
         .from('tasks')
-        .select('*, profiles(username, avatar_url), columns(name)')
+        .select('''
+          *,
+          columns(name),
+          assignee:profiles!tasks_assignee_id_fkey(
+            username,
+            avatar_url
+          ),
+          creator:profiles!tasks_created_by_fkey(
+            username,
+            avatar_url
+          )
+        ''')
         .eq('id', taskId)
         .single();
 
     final commentsData = await _client
         .from('comments')
-        .select('*, profiles(username, avatar_url)')
+        .select('''
+          *,
+          profiles!comments_user_id_fkey(
+            username,
+            avatar_url
+          )
+        ''')
         .eq('task_id', taskId)
         .order('created_at');
 
@@ -52,7 +70,13 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
       'task_id': taskId,
       'user_id': userId,
       'content': content,
-    }).select('*, profiles(username, avatar_url)').single();
+    }).select('''
+      *,
+      profiles!comments_user_id_fkey(
+        username,
+        avatar_url
+      )
+    ''').single();
 
     return CommentModel.fromJson(response);
   }

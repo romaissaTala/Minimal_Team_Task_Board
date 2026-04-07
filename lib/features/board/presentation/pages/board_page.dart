@@ -29,7 +29,9 @@ class BoardPage extends StatelessWidget {
     );
   }
 }
-class _BoardView extends StatefulWidget {   // change to StatefulWidget
+
+class _BoardView extends StatefulWidget {
+  // change to StatefulWidget
   final String projectId;
   final String projectName;
   const _BoardView({required this.projectId, required this.projectName});
@@ -40,7 +42,7 @@ class _BoardView extends StatefulWidget {   // change to StatefulWidget
 
 class _BoardViewState extends State<_BoardView> {
   TaskFilter _filter = TaskFilter.all;
-  
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;

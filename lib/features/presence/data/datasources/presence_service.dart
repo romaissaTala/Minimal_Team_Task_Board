@@ -3,11 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/presence_entity.dart';
 
-
 /// PresenceService handles all real-time presence features:
 /// - Typing indicators: who is typing in which task
 /// - Online status: who is currently in which project
-/// 
+///
 /// How it works:
 /// 1. User starts typing → we upsert a row in `presence` table with action='typing'
 /// 2. After 3 seconds of no typing → we delete/update the row
@@ -80,20 +79,41 @@ class PresenceService {
         .from('presence')
         .stream(primaryKey: ['id'])
         .eq('task_id', taskId)
-        .map((rows) {
+        .asyncMap((rows) async {
           final currentUserId = _currentUserId;
-          return rows
-              .where((r) =>
-                  r['action'] == 'typing' &&
-                  r['user_id'] != currentUserId)
-              .map((r) => PresenceMember(
-                    userId: r['user_id'] as String,
-                    username: r['username'] as String? ?? 'Someone',
-                    action: 'typing',
-                    taskId: taskId,
-                    updatedAt: DateTime.parse(r['updated_at'] as String),
-                  ))
-              .toList();
+          final members = <PresenceMember>[];
+
+          for (final row in rows) {
+            if (row['action'] == 'typing' && row['user_id'] != currentUserId) {
+              // Fetch username from profiles
+              try {
+                final profile = await _client
+                    .from('profiles')
+                    .select('username')
+                    .eq('id', row['user_id'])
+                    .maybeSingle(); // Use maybeSingle to avoid errors
+
+                members.add(PresenceMember(
+                  userId: row['user_id'] as String,
+                  username: profile?['username'] as String? ?? 'Someone',
+                  action: 'typing',
+                  taskId: taskId,
+                  updatedAt: DateTime.parse(row['updated_at'] as String),
+                ));
+              } catch (e) {
+                // Fallback if profile fetch fails
+                members.add(PresenceMember(
+                  userId: row['user_id'] as String,
+                  username: 'Someone',
+                  action: 'typing',
+                  taskId: taskId,
+                  updatedAt: DateTime.parse(row['updated_at'] as String),
+                ));
+              }
+            }
+          }
+
+          return members;
         });
   }
 

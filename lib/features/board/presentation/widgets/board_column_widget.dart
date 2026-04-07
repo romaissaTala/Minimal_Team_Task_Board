@@ -187,13 +187,20 @@ class _BoardColumnWidgetState extends State<BoardColumnWidget> {
         borderRadius: BorderRadius.circular(12),
         child: SizedBox(
           width: 260,
-          child: TaskCardWidget(task: task, isDragging: true),
+          child:  TaskCardWidget(
+          task: task, 
+          isDragging: true,
+          projectId: widget.projectId, // ADD THIS
+        ),
         ),
       ),
       // Shows a greyed-out placeholder while the card is being dragged
       childWhenDragging: Opacity(
         opacity: 0.3,
-        child: TaskCardWidget(task: task),
+        child:  TaskCardWidget(
+          task: task, 
+          projectId: widget.projectId, // ADD THIS
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 8),
@@ -223,7 +230,10 @@ class _BoardColumnWidgetState extends State<BoardColumnWidget> {
                   width: 2,
                 ),
               ),
-              child: TaskCardWidget(task: task),
+              child:  TaskCardWidget(
+          task: task, 
+          projectId: widget.projectId, // ADD THIS
+        ),
             );
           },
         ),

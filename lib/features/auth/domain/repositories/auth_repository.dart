@@ -9,4 +9,9 @@ abstract class AuthRepository {
   });
   Future<void> logout();
   UserEntity? getCurrentUser();
+   Future<void> sendMagicLink({required String email});
+  Future<UserEntity> verifyMagicLink({
+    required String email,
+    required String token,
+  });
 }

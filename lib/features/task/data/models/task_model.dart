@@ -12,7 +12,9 @@ class CommentModel extends CommentEntity {
   });
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
-    final profile = json['profiles'];
+    // Handle the nested profiles relationship
+    final profile = json['profiles'] as Map<String, dynamic>?;
+
     return CommentModel(
       id: json['id'] as String,
       taskId: json['task_id'] as String,
@@ -44,15 +46,19 @@ class TaskDetailModel extends TaskDetailEntity {
     Map<String, dynamic> json,
     List<CommentModel> comments,
   ) {
+    // Handle the assignee relationship
+    final assignee = json['assignee'] as Map<String, dynamic>?;
+    final column = json['columns'] as Map<String, dynamic>?;
+
     return TaskDetailModel(
       id: json['id'] as String,
       columnId: json['column_id'] as String,
-      columnName: json['columns']?['name'] as String? ?? '',
+      columnName: column?['name'] as String? ?? '',
       projectId: json['project_id'] as String,
       title: json['title'] as String,
       description: json['description'] as String?,
       assigneeId: json['assignee_id'] as String?,
-      assigneeUsername: json['profiles']?['username'] as String?,
+      assigneeUsername: assignee?['username'] as String?,
       priority: json['priority'] as String? ?? 'medium',
       dueDate: json['due_date'] != null
           ? DateTime.parse(json['due_date'] as String)

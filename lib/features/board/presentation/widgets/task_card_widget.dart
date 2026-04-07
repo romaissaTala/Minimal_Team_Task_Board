@@ -6,11 +6,13 @@ import '../../domain/entities/board_entity.dart';
 class TaskCardWidget extends StatelessWidget {
   final TaskCardEntity task;
   final bool isDragging;
+  final String projectId; // ADD THIS
 
   const TaskCardWidget({
     super.key,
     required this.task,
     this.isDragging = false,
+    required this.projectId, // ADD THIS
   });
 
   Color get _priorityColor {
@@ -26,7 +28,10 @@ class TaskCardWidget extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
-      onTap: isDragging ? null : () => context.push('/task/${task.id}'),
+      onTap: isDragging ? null : () => context.push(
+        '/task/${task.id}',
+        extra: {'projectId': projectId}, // ADD THIS
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: isDragging ? scheme.surface.withOpacity(0.9) : scheme.surface,

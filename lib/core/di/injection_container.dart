@@ -6,6 +6,9 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
+import '../../features/auth/domain/usecases/send_magic_link_usecase.dart';
+import '../../features/auth/domain/usecases/verify_magic_link_usecase.dart'
+    show VerifyMagicLinkUseCase;
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/presence/data/datasources/presence_service.dart';
 import '../../features/projects/data/datasources/project_remote_datasource.dart';
@@ -47,10 +50,12 @@ Future<void> init() async {
   sl.registerLazySingleton(() => RegisterUseCase(sl()));
   sl.registerLazySingleton(() => LogoutUseCase(sl()));
   sl.registerFactory(() => AuthBloc(
-        loginUseCase: sl(),
-        registerUseCase: sl(),
-        logoutUseCase: sl(),
-      ));
+  loginUseCase: sl(),
+  registerUseCase: sl(),
+  logoutUseCase: sl(),
+  sendMagicLinkUseCase: sl(),
+  verifyMagicLinkUseCase: sl(),
+));
 
   // ---- PROJECTS ----
   sl.registerLazySingleton<ProjectRemoteDataSource>(
@@ -93,6 +98,9 @@ Future<void> init() async {
 
   // Add this inside init(), before the AUTH section:
   sl.registerLazySingleton(() => PresenceService(sl()));
+
+  sl.registerLazySingleton(() => SendMagicLinkUseCase(sl()));
+  sl.registerLazySingleton(() => VerifyMagicLinkUseCase(sl()));
   sl.registerFactory(() => TaskBloc(
         getTaskUseCase: sl(),
         addCommentUseCase: sl(),

@@ -1,20 +1,30 @@
-// auth_remote_datasource.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/auth_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> login({required String email, required String password});
+  
   Future<UserModel> register({
     required String email,
     required String password,
     required String username,
   });
+  
   Future<void> logout();
+  
   UserModel? getCurrentUser();
+  
+  // Add these new methods
+  Future<void> sendMagicLink({required String email});
+  Future<UserModel> verifyMagicLink({
+    required String email,
+    required String token,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final SupabaseClient _client;
+  
   AuthRemoteDataSourceImpl(this._client);
 
   @override
@@ -30,46 +40,46 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       
       if (response.user == null) throw Exception('Login failed');
 
-      // Try to get profile, wait a moment if it doesn't exist yet
-      UserModel? userModel;
-      int retries = 0;
-      while (retries < 5) {
-        try {
-          final profile = await _client
-              .from('profiles')
-              .select()
-              .eq('id', response.user!.id)
-              .maybeSingle(); // Use maybeSingle to avoid exception
-          
-          if (profile != null) {
-            // Update status to online
-            await _client
-                .from('profiles')
-                .update({'status': 'online'})
-                .eq('id', response.user!.id);
-            
-            userModel = UserModel.fromJson(profile, email);
-            break;
-          }
-        } catch (e) {
-          // Profile might not be created yet, wait and retry
-          await Future.delayed(Duration(milliseconds: 500));
-        }
-        retries++;
-      }
-      
-      if (userModel == null) {
-        // Fallback: create minimal user model without profile
-        userModel = UserModel(
-          id: response.user!.id,
-          email: email,
-          username: email.split('@').first,
-        );
-      }
-      
+      // Get or create profile
+      final userModel = await _getOrCreateUserProfile(response.user!, email);
       return userModel;
     } catch (e) {
       throw Exception('Login failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> sendMagicLink({required String email}) async {
+    try {
+      await _client.auth.signInWithOtp(
+        email: email,
+        emailRedirectTo: 'com.taskboard.app://login-callback',
+      );
+    } catch (e) {
+      throw Exception('Failed to send magic link: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<UserModel> verifyMagicLink({
+    required String email,
+    required String token,
+  }) async {
+    try {
+      // Verify the OTP token
+      final response = await _client.auth.verifyOTP(
+        email: email,
+        token: token,
+        type: OtpType.magiclink,
+      );
+      
+      if (response.user == null) throw Exception('Verification failed');
+      
+      // Get or create profile
+      final userModel = await _getOrCreateUserProfile(response.user!, email);
+      return userModel;
+    } catch (e) {
+      throw Exception('Failed to verify magic link: ${e.toString()}');
     }
   }
 
@@ -83,40 +93,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await _client.auth.signUp(
         email: email,
         password: password,
-        data: {
-          'username': username,
-          'avatar_url': null,
-        },
+        data: {'username': username},
         emailRedirectTo: 'com.taskboard.app://login-callback',
       );
 
-      if (response.user == null) {
-        throw Exception('Registration failed');
-      }
-
-      // Wait a bit for the trigger to create the profile
-      await Future.delayed(Duration(seconds: 1));
+      if (response.user == null) throw Exception('Registration failed');
       
-      // Try to verify profile was created
-      int retries = 0;
-      while (retries < 3) {
-        try {
-          final profile = await _client
-              .from('profiles')
-              .select()
-              .eq('id', response.user!.id)
-              .maybeSingle();
-          
-          if (profile != null) {
-            break;
-          }
-        } catch (e) {
-          // Profile not ready yet
-          await Future.delayed(Duration(milliseconds: 500));
-        }
-        retries++;
-      }
-
       return UserModel(
         id: response.user!.id,
         email: email,
@@ -139,7 +121,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
       await _client.auth.signOut();
     } catch (e) {
-      // Even if profile update fails, still try to sign out
       await _client.auth.signOut();
     }
   }
@@ -153,5 +134,46 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       email: user.email ?? '',
       username: user.userMetadata?['username'] ?? user.email?.split('@').first ?? '',
     );
+  }
+
+  // Helper method to get or create user profile
+  Future<UserModel> _getOrCreateUserProfile(User user, String email) async {
+    UserModel? userModel;
+    int retries = 0;
+    
+    while (retries < 5) {
+      try {
+        final profile = await _client
+            .from('profiles')
+            .select()
+            .eq('id', user.id)
+            .maybeSingle();
+        
+        if (profile != null) {
+          // Update status to online
+          await _client
+              .from('profiles')
+              .update({'status': 'online'})
+              .eq('id', user.id);
+          
+          userModel = UserModel.fromJson(profile, email);
+          break;
+        }
+      } catch (e) {
+        await Future.delayed(Duration(milliseconds: 500));
+      }
+      retries++;
+    }
+    
+    if (userModel == null) {
+      // Create profile if it doesn't exist
+      userModel = UserModel(
+        id: user.id,
+        email: email,
+        username: email.split('@').first,
+      );
+    }
+    
+    return userModel;
   }
 }

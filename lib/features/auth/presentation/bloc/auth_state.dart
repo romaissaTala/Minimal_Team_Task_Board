@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
-import 'package:minimal_team_task_board/features/auth/domain/entities/user_entity.dart';
+import '../../domain/entities/user_entity.dart';
 
 abstract class AuthState extends Equatable {
+  const AuthState();
   @override
   List<Object?> get props => [];
 }
@@ -12,8 +13,9 @@ class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
   final UserEntity user;
-  AuthAuthenticated(this.user);
-
+  
+  const AuthAuthenticated(this.user);
+  
   @override
   List<Object?> get props => [user];
 }
@@ -22,16 +24,28 @@ class AuthUnauthenticated extends AuthState {}
 
 class AuthError extends AuthState {
   final String message;
-  AuthError(this.message);
-
+  
+  const AuthError(this.message);
+  
   @override
   List<Object?> get props => [message];
 }
 
 class AuthEmailSent extends AuthState {
   final String message;
-  AuthEmailSent(this.message);
-
+  
+  const AuthEmailSent(this.message);
+  
   @override
   List<Object?> get props => [message];
+}
+
+// Add this new state
+class AuthMagicLinkSent extends AuthState {
+  final String email;
+  
+  const AuthMagicLinkSent(this.email);
+  
+  @override
+  List<Object?> get props => [email];
 }

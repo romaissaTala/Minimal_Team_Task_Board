@@ -11,7 +11,7 @@ import '../widgets/splash_screen.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
-  
+
   static final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
@@ -21,22 +21,22 @@ class AppRouter {
       final isOnAuthPage = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register';
       final isOnSplash = state.matchedLocation == '/splash';
-      
+
       // Show splash screen first
       if (isOnSplash) return null;
-      
+
       // Redirect logic
       if (!isAuthenticated) {
         // Not logged in, go to login unless already on auth page
         return isOnAuthPage ? null : '/login';
       }
-      
+
       // Logged in
       if (isOnAuthPage) {
         // On login/register but already authenticated, go to projects
         return '/projects';
       }
-      
+
       // Allow navigation to other pages
       return null;
     },
@@ -66,9 +66,12 @@ class AppRouter {
       ),
       GoRoute(
         path: '/task/:taskId',
-        builder: (context, state) => TaskDetailPage(
-          taskId: state.pathParameters['taskId']!,
-        ),
+        builder: (context, state) {
+          final taskId = state.pathParameters['taskId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          final projectId = extra?['projectId'] ?? '';
+          return TaskDetailPage(taskId: taskId, projectId: projectId);
+        },
       ),
     ],
   );
